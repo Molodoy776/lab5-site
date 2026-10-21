@@ -933,11 +933,18 @@
       overflow: hidden;
       border-radius: var(--radius);
       isolation: isolate;
-      transition: transform .3s ease;
+      box-shadow: 0 10px 22px rgba(66, 43, 66, .05);
+      transition: transform .3s ease, box-shadow .3s ease;
     }
 
-    .toy-card:hover .toy-art {
-      transform: translateY(-5px);
+    /* Подъём карточки на 4 px и мягкая тень — только для точной мыши.
+       Фото не масштабируется и не обрезается: transform на .toy-art,
+       а появление анимируется на .toy-card — конфликтов нет. */
+    @media (hover: hover) and (pointer: fine) {
+      .toy-card:hover .toy-art {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 34px rgba(66, 43, 66, .14);
+      }
     }
 
     .toy-art::before {
@@ -1776,6 +1783,64 @@
       to { transform: translateX(-50%); }
     }
 
+    /* Медленное покачивание декоративных звёздочек на первом экране.
+       Движется только .spark: текст, кнопки и иллюстрация не затронуты. */
+    .spark {
+      will-change: transform;
+      animation: spark-sway 6s ease-in-out infinite alternate;
+    }
+
+    .spark--two {
+      animation-duration: 7s;
+      animation-delay: -2.5s;
+    }
+
+    @keyframes spark-sway {
+      from { transform: translateY(0); }
+      to { transform: translateY(6px); }
+    }
+
+    /* Появление при прокрутке: скрывающий класс добавляет только JS,
+       поэтому без скрипта или при ошибке контент остаётся видимым.
+       Задержка между соседними элементами — не более 300 мс. */
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity .5s ease, transform .5s ease;
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .js .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Тонкий индикатор прогресса чтения: вне потока, не перехватывает события */
+    .reading-progress {
+      position: fixed;
+      z-index: 60;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      pointer-events: none;
+      background: linear-gradient(90deg, #c98aa4, #9fb49a);
+      opacity: .9;
+      transform: scaleX(0);
+      transform-origin: 0 0;
+    }
+
+    /* На сенсорных экранах не оставляем «зависшие» hover-сдвиги */
+    @media (hover: none) {
+      .toy-card:hover .toy-art,
+      .custom-card:hover,
+      .btn:hover,
+      .text-link:hover span {
+        box-shadow: none;
+        transform: none;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -1784,6 +1849,21 @@
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
+      }
+
+      /* Контент виден сразу, новые движения и бесконечные анимации отключены */
+      .js .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+
+      .spark {
+        animation: none !important;
+      }
+
+      .reading-progress {
+        display: none !important;
       }
     }
 
@@ -2272,6 +2352,9 @@
 </head>
 
 <body>
+  <!-- Индикатор прогресса чтения: вне потока, не перехватывает нажатия -->
+  <div class="reading-progress" aria-hidden="true"></div>
+
   <!-- ШАПКА -->
   <header class="header">
     <div class="container header-inner">
@@ -3247,6 +3330,80 @@
       formStatus.hidden = false;
       formStatus.focus();
     });
+
+    // =========================
+    // ПОЯВЛЕНИЕ ПРИ ПРОКРУТКЕ
+    // =========================
+    // Скрывающий класс добавляет только JS, поэтому без скрипта всё видно.
+    // При отсутствии IntersectionObserver или prefers-reduced-motion: reduce
+    // анимация не запускается и контент остаётся видимым сразу.
+    const revealTargets = document.querySelectorAll(".toy-card, .process-step");
+
+    if (revealTargets.length && "IntersectionObserver" in window) {
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      if (!reducedMotion.matches) {
+        document.documentElement.classList.add("js");
+
+        revealTargets.forEach((item) => {
+          const index = Array.prototype.indexOf.call(
+            item.parentNode.children,
+            item
+          );
+          const delay = Math.min(index * 70, 300);
+          item.classList.add("reveal");
+          item.style.setProperty("--reveal-delay", delay + "ms");
+        });
+
+        const revealObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-visible");
+                revealObserver.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.15, rootMargin: "0px 0px -6% 0px" }
+        );
+
+        revealTargets.forEach((item) => revealObserver.observe(item));
+      }
+    }
+
+    // =========================
+    // ПРОГРЕСС ЧТЕНИЯ
+    // =========================
+    // Полоса фиксирована у верхнего края, не перехватывает нажатия.
+    // Обновляется через requestAnimationFrame: не чаще одного раза за кадр.
+    const progressBar = document.querySelector(".reading-progress");
+
+    if (
+      progressBar &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      let progressTicking = false;
+
+      const updateProgress = () => {
+        const doc = document.documentElement;
+        const maxScroll = doc.scrollHeight - window.innerHeight;
+        const ratio =
+          maxScroll > 0 ? Math.min(1, window.scrollY / maxScroll) : 0;
+        progressBar.style.transform = "scaleX(" + ratio.toFixed(4) + ")";
+        progressTicking = false;
+      };
+
+      const requestProgressUpdate = () => {
+        if (!progressTicking) {
+          progressTicking = true;
+          window.requestAnimationFrame(updateProgress);
+        }
+      };
+
+      window.addEventListener("scroll", requestProgressUpdate, { passive: true });
+      window.addEventListener("resize", requestProgressUpdate, { passive: true });
+      requestProgressUpdate();
+    }
 
     // Автоматический год в подвале.
     document.querySelector("#current-year").textContent =
