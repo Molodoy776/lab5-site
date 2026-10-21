@@ -926,10 +926,11 @@
 
     .toy-art {
       position: relative;
-      display: grid;
+      display: flex;
       min-height: 285px;
+      flex-direction: column;
+      align-items: stretch;
       overflow: hidden;
-      place-items: center;
       border-radius: var(--radius);
       isolation: isolate;
       transition: transform .3s ease;
@@ -980,24 +981,28 @@
       background: #e7dfed;
     }
 
-    .toy-emoji {
-      position: relative;
-      z-index: 1;
-      font-family: sans-serif;
-      font-size: clamp(100px, 11vw, 145px);
-      line-height: 1;
-      filter: drop-shadow(0 15px 10px rgba(66,43,66,.1));
-      transition: transform .3s ease;
+    .toy-photo {
+      width: calc(100% - 40px);
+      margin: 16px auto 0;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #fff;
     }
 
-    .toy-card:hover .toy-emoji {
-      transform: rotate(-5deg) scale(1.06);
+    .toy-img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
     }
 
     .toy-number {
-      position: absolute;
-      bottom: 22px;
-      left: 24px;
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      padding: 12px 22px;
       color: rgba(66,43,66,.7);
       font-family: Georgia, serif;
       font-size: 12px;
@@ -1936,10 +1941,6 @@
         min-height: 250px;
       }
 
-      .toy-emoji {
-        font-size: 120px;
-      }
-
       .custom-grid {
         grid-template-columns: 1fr;
         gap: 14px;
@@ -2128,6 +2129,7 @@
       }
 
       .gallery-grid {
+        grid-template-columns: 1fr;
         gap: 25px 12px;
       }
 
@@ -2140,14 +2142,9 @@
         inset: 8px;
       }
 
-      .toy-emoji {
-        font-size: 87px;
-      }
-
       .toy-number {
-        bottom: 13px;
-        left: 14px;
         font-size: 10px;
+        padding: 10px 16px;
       }
 
       .toy-info {
@@ -2462,14 +2459,16 @@
         </div>
 
         <!--
-          ДЕМОНСТРАЦИОННАЯ ГАЛЕРЕЯ:
-          Эмодзи используются как временные визуальные элементы.
-          Для настоящего портфолио замени их фотографиями игрушек.
+          ГАЛЕРЕЯ:
+          Фотографии игрушек находятся в папке pictures и подключены
+          относительными путями — они работают и локально, и на GitHub Pages.
         -->
         <div class="gallery-grid">
           <article class="toy-card">
-            <div class="toy-art toy-art--bunny" role="img" aria-label="Иллюстрация плюшевого зайчика">
-              <span class="toy-emoji" aria-hidden="true">🐰</span>
+            <div class="toy-art toy-art--bunny">
+              <div class="toy-photo">
+                <img class="toy-img" src="pictures/Зайка Луна.png" alt="Зайка Луна — мягкая игрушка-зайчик с длинными ушками">
+              </div>
               <span class="toy-number">NO. 01 / BUNNY</span>
             </div>
             <div class="toy-info">
@@ -2480,8 +2479,10 @@
           </article>
 
           <article class="toy-card">
-            <div class="toy-art toy-art--bear" role="img" aria-label="Иллюстрация плюшевого мишки">
-              <span class="toy-emoji" aria-hidden="true">🧸</span>
+            <div class="toy-art toy-art--bear">
+              <div class="toy-photo">
+                <img class="toy-img" src="pictures/Мишка Тёпа.png" alt="Мишка Тёпа — плюшевый мишка для крепких объятий">
+              </div>
               <span class="toy-number">NO. 02 / BEAR</span>
             </div>
             <div class="toy-info">
@@ -2492,8 +2493,10 @@
           </article>
 
           <article class="toy-card">
-            <div class="toy-art toy-art--cat" role="img" aria-label="Иллюстрация котика">
-              <span class="toy-emoji" aria-hidden="true">🐱</span>
+            <div class="toy-art toy-art--cat">
+              <div class="toy-photo">
+                <img class="toy-img" src="pictures/Кот Пломбир.png" alt="Кот Пломбир — пушистый плюшевый кот">
+              </div>
               <span class="toy-number">NO. 03 / CAT</span>
             </div>
             <div class="toy-info">
@@ -2504,8 +2507,10 @@
           </article>
 
           <article class="toy-card">
-            <div class="toy-art toy-art--fox" role="img" aria-label="Иллюстрация лисёнка">
-              <span class="toy-emoji" aria-hidden="true">🦊</span>
+            <div class="toy-art toy-art--fox">
+              <div class="toy-photo">
+                <img class="toy-img" src="pictures/Лисёнок Рыжик.png" alt="Лисёнок Рыжик — плюшевый лисёнок с рыжим хвостом">
+              </div>
               <span class="toy-number">NO. 04 / FOX</span>
             </div>
             <div class="toy-info">
@@ -2516,8 +2521,10 @@
           </article>
 
           <article class="toy-card">
-            <div class="toy-art toy-art--whale" role="img" aria-label="Иллюстрация кита">
-              <span class="toy-emoji" aria-hidden="true">🐳</span>
+            <div class="toy-art toy-art--whale">
+              <div class="toy-photo">
+                <img class="toy-img" src="pictures/Кит Облачко.png" alt="Кит Облачко — мягкая игрушка-кит для спокойного сна">
+              </div>
               <span class="toy-number">NO. 05 / WHALE</span>
             </div>
             <div class="toy-info">
@@ -2528,8 +2535,10 @@
           </article>
 
           <article class="toy-card">
-            <div class="toy-art toy-art--lamb" role="img" aria-label="Иллюстрация овечки">
-              <span class="toy-emoji" aria-hidden="true">🐑</span>
+            <div class="toy-art toy-art--lamb">
+              <div class="toy-photo">
+                <img class="toy-img" src="pictures/Овечка Плюша.png" alt="Овечка Плюша — плюшевая овечка, хранительница уюта">
+              </div>
               <span class="toy-number">NO. 06 / LAMB</span>
             </div>
             <div class="toy-info">
