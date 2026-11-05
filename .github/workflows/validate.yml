@@ -1,21 +1,39 @@
+
+# Название workflow, которое отображается во вкладке Actions на GitHub
 name: Validate HTML and CSS
 
+# Указываем, при каких событиях будет запускаться проверка
 on:
+  # Запускать проверку при отправке изменений в репозиторий
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main  # Только если изменения отправлены в ветку main
 
+  # Запускать проверку при создании или обновлении Pull Request
+  pull_request:
+    branches:
+      - main  # Если Pull Request направлен в ветку main
+
+# Описываем задачи, которые должен выполнить workflow
 jobs:
+
+  # Название задачи — validate (проверка)
   validate:
+
+    # Указываем операционную систему виртуального компьютера,
+    # на котором будет выполняться проверка
     runs-on: ubuntu-latest
 
+    # Последовательность действий, которые нужно выполнить
     steps:
+
+      # Первый шаг — получение файлов нашего репозитория
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Второй шаг — проверка HTML и CSS на ошибки
       - name: Validate HTML and CSS
         uses: Cyb3r-Jak3/html5validator-action@v7.2.0
         with:
-          root: .
-          css: true
+          root: .       # Проверять файлы, начиная с корня репозитория
+          css: true     # Включить проверку CSS
